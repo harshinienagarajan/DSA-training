@@ -1,152 +1,132 @@
-package dsa.day2;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 public class Main {
-    // 1. Calculate Mid
-    static int calculateMid(int low, int high) {
-        return low + (high - low) / 2;
+
+    // Linked List Node
+    public static class ListNode {
+        int val;
+        ListNode next;
+
+        ListNode(int val) {
+            this.val = val;
+        }
     }
 
-    // 2. Complex Target with Mid (Binary Search)
-    static int binarySearch(List<Integer> arr, int target) {
-        int low = 0, high = arr.size() - 1;
+    // 1. Merge Two Sorted Linked Lists
+    public static ListNode mergeTwoLists(ListNode list1, ListNode list2) {
+        ListNode dummy = new ListNode(0);
+        ListNode tail = dummy;
 
-        while (low <= high) {
-            int mid = low + (high - low) / 2;
-
-            if (arr.get(mid) == target)
-                return mid;
-            else if (arr.get(mid) < target)
-                low = mid + 1;
-            else
-                high = mid - 1;
+        while (list1 != null && list2 != null) {
+            if (list1.val <= list2.val) {
+                tail.next = list1;
+                list1 = list1.next;
+            } else {
+                tail.next = list2;
+                list2 = list2.next;
+            }
+            tail = tail.next;
         }
 
-        return -1;
+        tail.next = (list1 != null) ? list1 : list2;
+
+        return dummy.next;
     }
 
-    // 3. Print N Natural Numbers Using Recursion
-    static void printNatural(int n) {
-        if (n == 0)
-            return;
+    // 2. Merge Sorted Array
+    public static void merge(int[] nums1, int m, int[] nums2, int n) {
+        int i = m - 1;
+        int j = n - 1;
+        int k = m + n - 1;
 
-        printNatural(n - 1);
-        System.out.print(n + " ");
-    }
-
-    // 4. Sum of First N Natural Numbers Using Recursion
-    static int sumNatural(int n) {
-        if (n == 0)
-            return 0;
-
-        return n + sumNatural(n - 1);
-    }
-
-    // 5. Nth Fibonacci Using Recursion (Optimized)
-    static long fibonacci(int n, long[] dp) {
-        if (n <= 1)
-            return n;
-
-        if (dp[n] != -1)
-            return dp[n];
-
-        return dp[n] = fibonacci(n - 1, dp) + fibonacci(n - 2, dp);
-    }
-
-    // 6. Array of Squares
-    static List<Integer> squareArray(List<Integer> arr) {
-        List<Integer> result = new ArrayList<>();
-
-        for (int num : arr)
-            result.add(num * num);
-
-        return result;
-    }
-
-    // 7. Count Factors
-    static int countFactors(int n) {
-        int count = 0;
-
-        for (int i = 1; i * i <= n; i++) {
-            if (n % i == 0) {
-                if (i == n / i)
-                    count++;
-                else
-                    count += 2;
+        while (i >= 0 && j >= 0) {
+            if (nums1[i] > nums2[j]) {
+                nums1[k--] = nums1[i--];
+            } else {
+                nums1[k--] = nums2[j--];
             }
         }
 
-        return count;
+        while (j >= 0) {
+            nums1[k--] = nums2[j--];
+        }
     }
 
-    // 8. Prime Check
-    static boolean isPrime(int n) {
-        if (n <= 1)
-            return false;
+    // 3. Maximum Consecutive Ones (Optimized)
+    public static int findMaxConsecutiveOnes(int[] nums) {
+        int count = 0;
+        int maxCount = 0;
 
-        for (int i = 2; i * i <= n; i++) {
-            if (n % i == 0)
-                return false;
+        for (int num : nums) {
+            if (num == 1) {
+                count++;
+                maxCount = Math.max(maxCount, count);
+            } else {
+                count = 0;
+            }
         }
 
-        return true;
+        return maxCount;
+    }
+
+    // 4. Maximum Subarray Sum (Kadane's Algorithm)
+    public static int maxSubArray(int[] nums) {
+        int currentSum = nums[0];
+        int maxSum = nums[0];
+
+        for (int i = 1; i < nums.length; i++) {
+            currentSum = Math.max(nums[i], currentSum + nums[i]);
+            maxSum = Math.max(maxSum, currentSum);
+        }
+
+        return maxSum;
+    }
+
+    // Print Linked List
+    public static void printList(ListNode head) {
+        while (head != null) {
+            System.out.print(head.val + " ");
+            head = head.next;
+        }
+        System.out.println();
     }
 
     public static void main(String[] args) {
-        // 1. Mid Calculation
-        int low = 10, high = 20;
-        System.out.println("Mid = " + calculateMid(low, high));
-        System.out.println();
 
-        // 2. Binary Search
-        List<Integer> arr = Arrays.asList(2, 4, 6, 8, 10, 12, 14);
-        int target = 10;
+        // ===== Question 1 =====
+        System.out.println("Merge Two Sorted Linked Lists:");
 
-        int index = binarySearch(arr, target);
+        ListNode l1 = new ListNode(1);
+        l1.next = new ListNode(2);
+        l1.next.next = new ListNode(4);
 
-        if (index != -1)
-            System.out.println("Target found at index: " + index + "\n");
-        else
-            System.out.println("Target not found\n");
+        ListNode l2 = new ListNode(1);
+        l2.next = new ListNode(3);
+        l2.next.next = new ListNode(4);
 
-        // 3. Print N Natural Numbers
-        int n = 10;
-        System.out.print("Natural Numbers: ");
-        printNatural(n);
-        System.out.println("\n");
+        ListNode mergedList = mergeTwoLists(l1, l2);
+        printList(mergedList);
 
-        // 4. Sum of First N Natural Numbers
-        System.out.println("Sum of first " + n + " natural numbers = " + sumNatural(n) + "\n");
+        // ===== Question 2 =====
+        System.out.println("\nMerge Sorted Array:");
 
-        // 5. Nth Fibonacci
-        int fibN = 10;
-        long[] dp = new long[fibN + 1];
-        Arrays.fill(dp, -1);
+        int[] nums1 = {1, 2, 3, 0, 0, 0};
+        int[] nums2 = {2, 5, 6};
 
-        System.out.println(fibN + "th Fibonacci Number = " + fibonacci(fibN, dp) + "\n");
+        merge(nums1, 3, nums2, 3);
 
-        // 6. Array of Squares
-        List<Integer> nums = Arrays.asList(1, 2, 3, 4, 5);
-        List<Integer> squares = squareArray(nums);
+        for (int num : nums1) {
+            System.out.print(num + " ");
+        }
 
-        System.out.print("Squares Array: ");
-        for (int x : squares)
-            System.out.print(x + " ");
-        System.out.println("\n");
+        // ===== Question 3 =====
+        System.out.println("\n\nMaximum Consecutive Ones:");
 
-        // 7. Count Factors
-        int num = 36;
-        System.out.println("Number of factors of " + num + " = " + countFactors(num) + "\n");
+        int[] arr1 = {1, 1, 0, 1, 1, 1};
+        System.out.println(findMaxConsecutiveOnes(arr1));
 
-        // 8. Prime Check
-        int primeNum = 29;
+        // ===== Question 4 =====
+        System.out.println("\nMaximum Subarray Sum (Kadane's Algorithm):");
 
-        if (isPrime(primeNum))
-            System.out.println(primeNum + " is Prime");
-        else
-            System.out.println(primeNum + " is Not Prime");
+        int[] arr2 = {-2, 1, -3, 4, -1, 2, 1, -5, 4};
+        System.out.println(maxSubArray(arr2));
     }
 }
