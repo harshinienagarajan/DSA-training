@@ -1,132 +1,133 @@
+package day6;
+
+import java.util.*;
+
 public class Main {
 
-    // Linked List Node
-    public static class ListNode {
-        int val;
-        ListNode next;
+    static class NumMatrix {
 
-        ListNode(int val) {
-            this.val = val;
-        }
-    }
+        int[][] prefix;
 
-    // 1. Merge Two Sorted Linked Lists
-    public static ListNode mergeTwoLists(ListNode list1, ListNode list2) {
-        ListNode dummy = new ListNode(0);
-        ListNode tail = dummy;
+        public NumMatrix(int[][] matrix) {
 
-        while (list1 != null && list2 != null) {
-            if (list1.val <= list2.val) {
-                tail.next = list1;
-                list1 = list1.next;
-            } else {
-                tail.next = list2;
-                list2 = list2.next;
-            }
-            tail = tail.next;
-        }
+            int rows = matrix.length;
 
-        tail.next = (list1 != null) ? list1 : list2;
+            if (rows == 0)
+                return;
 
-        return dummy.next;
-    }
+            int cols = matrix[0].length;
 
-    // 2. Merge Sorted Array
-    public static void merge(int[] nums1, int m, int[] nums2, int n) {
-        int i = m - 1;
-        int j = n - 1;
-        int k = m + n - 1;
+            prefix = new int[rows + 1][cols + 1];
 
-        while (i >= 0 && j >= 0) {
-            if (nums1[i] > nums2[j]) {
-                nums1[k--] = nums1[i--];
-            } else {
-                nums1[k--] = nums2[j--];
+            for (int i = 0; i < rows; i++) {
+
+                for (int j = 0; j < cols; j++) {
+
+                    prefix[i + 1][j + 1] =
+                            matrix[i][j]
+                                    + prefix[i][j + 1]
+                                    + prefix[i + 1][j]
+                                    - prefix[i][j];
+                }
             }
         }
 
-        while (j >= 0) {
-            nums1[k--] = nums2[j--];
+        public int sumRegion(int row1, int col1,
+                             int row2, int col2) {
+
+            return prefix[row2 + 1][col2 + 1]
+                    - prefix[row1][col2 + 1]
+                    - prefix[row2 + 1][col1]
+                    + prefix[row1][col1];
         }
     }
 
-    // 3. Maximum Consecutive Ones (Optimized)
-    public static int findMaxConsecutiveOnes(int[] nums) {
+    public static int subarraySumEqualsK(int[] nums, int k) {
+
+        HashMap<Integer, Integer> prefixCount = new HashMap<>();
+
+        prefixCount.put(0, 1);
+
+        int currentSum = 0;
         int count = 0;
-        int maxCount = 0;
 
         for (int num : nums) {
-            if (num == 1) {
-                count++;
-                maxCount = Math.max(maxCount, count);
-            } else {
-                count = 0;
+
+            currentSum += num;
+
+            if (prefixCount.containsKey(currentSum - k)) {
+                count += prefixCount.get(currentSum - k);
             }
+
+            prefixCount.put(
+                    currentSum,
+                    prefixCount.getOrDefault(currentSum, 0) + 1
+            );
         }
 
-        return maxCount;
+        return count;
     }
 
-    // 4. Maximum Subarray Sum (Kadane's Algorithm)
-    public static int maxSubArray(int[] nums) {
-        int currentSum = nums[0];
-        int maxSum = nums[0];
+    public static int longestSubarrayWithSumK(int[] nums, int k) {
 
-        for (int i = 1; i < nums.length; i++) {
-            currentSum = Math.max(nums[i], currentSum + nums[i]);
-            maxSum = Math.max(maxSum, currentSum);
+        HashMap<Integer, Integer> firstOccurrence = new HashMap<>();
+
+        int prefixSum = 0;
+        int maxLen = 0;
+
+        for (int i = 0; i < nums.length; i++) {
+
+            prefixSum += nums[i];
+
+            if (prefixSum == k) {
+                maxLen = i + 1;
+            }
+
+            if (firstOccurrence.containsKey(prefixSum - k)) {
+
+                maxLen = Math.max(
+                        maxLen,
+                        i - firstOccurrence.get(prefixSum - k)
+                );
+            }
+
+            firstOccurrence.putIfAbsent(prefixSum, i);
         }
 
-        return maxSum;
-    }
-
-    // Print Linked List
-    public static void printList(ListNode head) {
-        while (head != null) {
-            System.out.print(head.val + " ");
-            head = head.next;
-        }
-        System.out.println();
+        return maxLen;
     }
 
     public static void main(String[] args) {
 
-        // ===== Question 1 =====
-        System.out.println("Merge Two Sorted Linked Lists:");
+        int[][] matrix = {
+                {3, 0, 1, 4, 2},
+                {5, 6, 3, 2, 1},
+                {1, 2, 0, 1, 5},
+                {4, 1, 0, 1, 7},
+                {1, 0, 3, 0, 5}
+        };
 
-        ListNode l1 = new ListNode(1);
-        l1.next = new ListNode(2);
-        l1.next.next = new ListNode(4);
+        NumMatrix obj = new NumMatrix(matrix);
 
-        ListNode l2 = new ListNode(1);
-        l2.next = new ListNode(3);
-        l2.next.next = new ListNode(4);
+        System.out.println("2D Range Sum Query:");
+        System.out.println(
+                obj.sumRegion(2, 1, 4, 3)
+        );
 
-        ListNode mergedList = mergeTwoLists(l1, l2);
-        printList(mergedList);
+        int[] arr1 = {1, 1, 1};
+        int k1 = 2;
 
-        // ===== Question 2 =====
-        System.out.println("\nMerge Sorted Array:");
+        System.out.println("\nSubarray Sum Equals K:");
+        System.out.println(
+                subarraySumEqualsK(arr1, k1)
+        );
 
-        int[] nums1 = {1, 2, 3, 0, 0, 0};
-        int[] nums2 = {2, 5, 6};
+        int[] arr2 = {10, 5, 2, 7, 1, 9};
+        int k2 = 15;
 
-        merge(nums1, 3, nums2, 3);
-
-        for (int num : nums1) {
-            System.out.print(num + " ");
-        }
-
-        // ===== Question 3 =====
-        System.out.println("\n\nMaximum Consecutive Ones:");
-
-        int[] arr1 = {1, 1, 0, 1, 1, 1};
-        System.out.println(findMaxConsecutiveOnes(arr1));
-
-        // ===== Question 4 =====
-        System.out.println("\nMaximum Subarray Sum (Kadane's Algorithm):");
-
-        int[] arr2 = {-2, 1, -3, 4, -1, 2, 1, -5, 4};
-        System.out.println(maxSubArray(arr2));
+        System.out.println("\nLongest Subarray With Sum K:");
+        System.out.println(
+                longestSubarrayWithSumK(arr2, k2)
+        );
     }
 }
