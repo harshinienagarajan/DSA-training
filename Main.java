@@ -1,40 +1,37 @@
-package day6;
+package day7;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Main {
-
+    // 1) Range Sum Query 2D (Prefix Sum Matrix)
     static class NumMatrix {
-
-        int[][] prefix;
+        private final int[][] prefix;
 
         public NumMatrix(int[][] matrix) {
+            if (matrix == null || matrix.length == 0 || matrix[0].length == 0) {
+                prefix = new int[0][0];
+                return;
+            }
 
             int rows = matrix.length;
-
-            if (rows == 0)
-                return;
-
             int cols = matrix[0].length;
-
             prefix = new int[rows + 1][cols + 1];
 
             for (int i = 0; i < rows; i++) {
-
                 for (int j = 0; j < cols; j++) {
-
-                    prefix[i + 1][j + 1] =
-                            matrix[i][j]
-                                    + prefix[i][j + 1]
-                                    + prefix[i + 1][j]
-                                    - prefix[i][j];
+                    prefix[i + 1][j + 1] = matrix[i][j]
+                            + prefix[i][j + 1]
+                            + prefix[i + 1][j]
+                            - prefix[i][j];
                 }
             }
         }
 
-        public int sumRegion(int row1, int col1,
-                             int row2, int col2) {
-
+        public int sumRegion(int row1, int col1, int row2, int col2) {
+            if (prefix.length == 0 || prefix[0].length == 0) {
+                return 0;
+            }
             return prefix[row2 + 1][col2 + 1]
                     - prefix[row1][col2 + 1]
                     - prefix[row2 + 1][col1]
@@ -42,92 +39,62 @@ public class Main {
         }
     }
 
-    public static int subarraySumEqualsK(int[] nums, int k) {
-
-        HashMap<Integer, Integer> prefixCount = new HashMap<>();
-
+    // 2) Subarray Sum Equals K (LeetCode 560)
+    static int subarraySumEqualsK(int[] nums, int k) {
+        Map<Integer, Integer> prefixCount = new HashMap<>();
         prefixCount.put(0, 1);
 
-        int currentSum = 0;
+        int prefixSum = 0;
         int count = 0;
 
         for (int num : nums) {
-
-            currentSum += num;
-
-            if (prefixCount.containsKey(currentSum - k)) {
-                count += prefixCount.get(currentSum - k);
-            }
-
-            prefixCount.put(
-                    currentSum,
-                    prefixCount.getOrDefault(currentSum, 0) + 1
-            );
+            prefixSum += num;
+            int needed = prefixSum - k;
+            count += prefixCount.getOrDefault(needed, 0);
+            prefixCount.put(prefixSum, prefixCount.getOrDefault(prefixSum, 0) + 1);
         }
-
         return count;
     }
 
-    public static int longestSubarrayWithSumK(int[] nums, int k) {
-
-        HashMap<Integer, Integer> firstOccurrence = new HashMap<>();
+    // 3) Longest Subarray With Sum K
+    static int longestSubarrayWithSumK(int[] nums, int k) {
+        Map<Integer, Integer> firstSeen = new HashMap<>();
+        firstSeen.put(0, -1);
 
         int prefixSum = 0;
-        int maxLen = 0;
+        int longest = 0;
 
         for (int i = 0; i < nums.length; i++) {
-
             prefixSum += nums[i];
-
-            if (prefixSum == k) {
-                maxLen = i + 1;
+            int needed = prefixSum - k;
+            if (firstSeen.containsKey(needed)) {
+                longest = Math.max(longest, i - firstSeen.get(needed));
             }
-
-            if (firstOccurrence.containsKey(prefixSum - k)) {
-
-                maxLen = Math.max(
-                        maxLen,
-                        i - firstOccurrence.get(prefixSum - k)
-                );
+            if (!firstSeen.containsKey(prefixSum)) {
+                firstSeen.put(prefixSum, i);
             }
-
-            firstOccurrence.putIfAbsent(prefixSum, i);
         }
-
-        return maxLen;
+        return longest;
     }
 
     public static void main(String[] args) {
-
+        System.out.println("=== Range Sum Query 2D ===");
         int[][] matrix = {
                 {3, 0, 1, 4, 2},
                 {5, 6, 3, 2, 1},
                 {1, 2, 0, 1, 5},
-                {4, 1, 0, 1, 7},
-                {1, 0, 3, 0, 5}
+                {4, 1, 0, 3, 2}
         };
+        NumMatrix numMatrix = new NumMatrix(matrix);
+        System.out.println(numMatrix.sumRegion(1, 1, 2, 3));
+        System.out.println(numMatrix.sumRegion(0, 0, 3, 3));
 
-        NumMatrix obj = new NumMatrix(matrix);
+        System.out.println("\n=== Subarray Sum Equals K ===");
+        int[] nums1 = {1, 1, 1};
+        System.out.println(subarraySumEqualsK(nums1, 2));
 
-        System.out.println("2D Range Sum Query:");
-        System.out.println(
-                obj.sumRegion(2, 1, 4, 3)
-        );
-
-        int[] arr1 = {1, 1, 1};
-        int k1 = 2;
-
-        System.out.println("\nSubarray Sum Equals K:");
-        System.out.println(
-                subarraySumEqualsK(arr1, k1)
-        );
-
-        int[] arr2 = {10, 5, 2, 7, 1, 9};
-        int k2 = 15;
-
-        System.out.println("\nLongest Subarray With Sum K:");
-        System.out.println(
-                longestSubarrayWithSumK(arr2, k2)
-        );
+        System.out.println("\n=== Longest Subarray With Sum K ===");
+        int[] nums2 = {1, 2, 1, 0, 1, 1, 1};
+        System.out.println(longestSubarrayWithSumK(nums2, 3));
     }
 }
