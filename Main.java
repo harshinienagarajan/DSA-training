@@ -1,162 +1,154 @@
-package day20;
+import java.util.*;
 
-import java.util.ArrayList;
-import java.util.List;
+class TreeNode {
+    int val;
+    TreeNode left;
+    TreeNode right;
+    
+    TreeNode(int val) {
+        this.val = val;
+        this.left = null;
+        this.right = null;
+    }
+}
 
 public class Main {
-    static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-
-        TreeNode(int val) {
-            this.val = val;
+    
+    // 1. Root to Leaf Paths
+    static class Solution1 {
+        void solve(TreeNode root, List<Integer> curr, List<List<Integer>> allPaths) {
+            if (root == null)
+                return;
+            curr.add(root.val);
+            if (root.left == null && root.right == null) {
+                allPaths.add(new ArrayList<>(curr));
+            } else {
+                solve(root.left, curr, allPaths);
+                solve(root.right, curr, allPaths);
+            }
+            curr.remove(curr.size() - 1);
+        }
+        
+        List<List<Integer>> paths(TreeNode root) {
+            List<List<Integer>> allPaths = new ArrayList<>();
+            List<Integer> curr = new ArrayList<>();
+            solve(root, curr, allPaths);
+            return allPaths;
         }
     }
-
-    static void solveInOrder(TreeNode root, List<Integer> ans) {
-        if (root == null) {
-            return;
+    
+    // 2. Diameter of Binary Tree
+    static class Solution2 {
+        int maxDiameter = 0;
+        
+        int calculateHeight(TreeNode node) {
+            if (node == null)
+                return 0;
+            int leftHeight = calculateHeight(node.left);
+            int rightHeight = calculateHeight(node.right);
+            maxDiameter = Math.max(maxDiameter, leftHeight + rightHeight);
+            return 1 + Math.max(leftHeight, rightHeight);
         }
-        solveInOrder(root.left, ans);
-        ans.add(root.val);
-        solveInOrder(root.right, ans);
+        
+        int diameterOfBinaryTree(TreeNode root) {
+            maxDiameter = 0;
+            calculateHeight(root);
+            return maxDiameter;
+        }
     }
-
-    static List<Integer> inOrder(TreeNode root) {
-        List<Integer> ans = new ArrayList<>();
-        solveInOrder(root, ans);
-        return ans;
+    
+    // 3. Binary Tree Level Order Traversal
+    static class Solution3 {
+        List<List<Integer>> levelOrder(TreeNode root) {
+            List<List<Integer>> result = new ArrayList<>();
+            if (root == null)
+                return result;
+            
+            Queue<TreeNode> q = new LinkedList<TreeNode>();
+            q.add(root);
+            
+            while (!q.isEmpty()) {
+                int levelSize = q.size();
+                List<Integer> curr = new ArrayList<>();
+                
+                for (int i = 0; i < levelSize; i++) {
+                    TreeNode node = q.poll();
+                    curr.add(node.val);
+                    
+                    if (node.left != null)
+                        q.add(node.left);
+                    if (node.right != null)
+                        q.add(node.right);
+                }
+                result.add(curr);
+            }
+            
+            return result;
+        }
     }
-
-    static void solvePreorder(TreeNode root, List<Integer> result) {
-        if (root == null) {
-            return;
+    
+    // 4. Vertical Order Traversal of a Binary Tree
+    static class Solution4 {
+        void dfs(TreeNode root, int row, int col, 
+                Map<Integer, Map<Integer, TreeSet<Integer>>> nodes) {
+            if (root == null)
+                return;
+            
+            nodes.putIfAbsent(col, new HashMap<>());
+            nodes.get(col).putIfAbsent(row, new TreeSet<>());
+            nodes.get(col).get(row).add(root.val);
+            
+            dfs(root.left, row + 1, col - 1, nodes);
+            dfs(root.right, row + 1, col + 1, nodes);
         }
-        result.add(root.val);
-        solvePreorder(root.left, result);
-        solvePreorder(root.right, result);
+        
+        List<List<Integer>> verticalTraversal(TreeNode root) {
+            Map<Integer, Map<Integer, TreeSet<Integer>>> nodes = new TreeMap<>();
+            dfs(root, 0, 0, nodes);
+            
+            List<List<Integer>> result = new ArrayList<>();
+            for (Map<Integer, TreeSet<Integer>> rows : nodes.values()) {
+                List<Integer> col_nodes = new ArrayList<>();
+                for (TreeSet<Integer> values : rows.values()) {
+                    col_nodes.addAll(values);
+                }
+                result.add(col_nodes);
+            }
+            
+            return result;
+        }
     }
-
-    static List<Integer> preOrder(TreeNode root) {
-        List<Integer> result = new ArrayList<>();
-        solvePreorder(root, result);
-        return result;
-    }
-
-    static void traverse(TreeNode root, List<Integer> result) {
-        if (root == null) {
-            return;
-        }
-        traverse(root.left, result);
-        traverse(root.right, result);
-        result.add(root.val);
-    }
-
-    static List<Integer> postOrder(TreeNode root) {
-        List<Integer> result = new ArrayList<>();
-        traverse(root, result);
-        return result;
-    }
-
-    static int maxDepth(TreeNode root) {
-        if (root == null) {
-            return 0;
-        }
-        int leftDepth = maxDepth(root.left);
-        int rightDepth = maxDepth(root.right);
-        return Math.max(leftDepth, rightDepth) + 1;
-    }
-
-    static int checkHeight(TreeNode root) {
-        if (root == null) {
-            return 0;
-        }
-        int left = checkHeight(root.left);
-        if (left == -1) {
-            return -1;
-        }
-        int right = checkHeight(root.right);
-        if (right == -1) {
-            return -1;
-        }
-        if (Math.abs(left - right) > 1) {
-            return -1;
-        }
-        return Math.max(left, right) + 1;
-    }
-
-    static boolean isBalanced(TreeNode root) {
-        return checkHeight(root) != -1;
-    }
-
-    static int countNodes(TreeNode root) {
-        if (root == null) {
-            return 0;
-        }
-        int leftHeight = 0;
-        TreeNode l = root;
-        while (l != null) {
-            leftHeight++;
-            l = l.left;
-        }
-
-        int rightHeight = 0;
-        TreeNode r = root;
-        while (r != null) {
-            rightHeight++;
-            r = r.right;
-        }
-
-        if (leftHeight == rightHeight) {
-            return (1 << leftHeight) - 1;
-        }
-
-        return 1 + countNodes(root.left) + countNodes(root.right);
-    }
-
-    static boolean hasPathSum(TreeNode root, int targetSum) {
-        if (root == null) {
-            return false;
-        }
-        if (root.left == null && root.right == null) {
-            return targetSum == root.val;
-        }
-        int remain = targetSum - root.val;
-        return hasPathSum(root.left, remain) || hasPathSum(root.right, remain);
-    }
-
-    static boolean isSameTree(TreeNode p, TreeNode q) {
-        if (p == null && q == null) {
-            return true;
-        }
-        if (p == null || q == null || p.val != q.val) {
-            return false;
-        }
-        return isSameTree(p.left, q.left) && isSameTree(p.right, q.right);
-    }
-
+    
     public static void main(String[] args) {
+        // Create a sample tree
         TreeNode root = new TreeNode(1);
         root.left = new TreeNode(2);
         root.right = new TreeNode(3);
         root.left.left = new TreeNode(4);
         root.left.right = new TreeNode(5);
-        root.right.left = new TreeNode(6);
-        root.right.right = new TreeNode(7);
-
-        System.out.println("Inorder: " + inOrder(root));
-        System.out.println("Preorder: " + preOrder(root));
-        System.out.println("Postorder: " + postOrder(root));
-        System.out.println("Max Depth: " + maxDepth(root));
-        System.out.println("Balanced: " + isBalanced(root));
-        System.out.println("Node Count: " + countNodes(root));
-        System.out.println("Path Sum 12: " + hasPathSum(root, 12));
-
-        TreeNode same1 = new TreeNode(1);
-        same1.left = new TreeNode(2);
-        TreeNode same2 = new TreeNode(1);
-        same2.left = new TreeNode(2);
-        System.out.println("Same Tree: " + isSameTree(same1, same2));
+        
+        // Test Solution 1: Root to Leaf Paths
+        System.out.println("1. Root to Leaf Paths:");
+        Solution1 sol1 = new Solution1();
+        List<List<Integer>> paths = sol1.paths(root);
+        System.out.println(paths);
+        
+        // Test Solution 2: Diameter of Binary Tree
+        System.out.println("\n2. Diameter of Binary Tree:");
+        Solution2 sol2 = new Solution2();
+        int diameter = sol2.diameterOfBinaryTree(root);
+        System.out.println("Diameter: " + diameter);
+        
+        // Test Solution 3: Level Order Traversal
+        System.out.println("\n3. Level Order Traversal:");
+        Solution3 sol3 = new Solution3();
+        List<List<Integer>> levels = sol3.levelOrder(root);
+        System.out.println(levels);
+        
+        // Test Solution 4: Vertical Order Traversal
+        System.out.println("\n4. Vertical Order Traversal:");
+        Solution4 sol4 = new Solution4();
+        List<List<Integer>> vertical = sol4.verticalTraversal(root);
+        System.out.println(vertical);
     }
 }
