@@ -1,296 +1,181 @@
+package day23;
+
 import java.util.*;
 
-class TreeNode {
-    int val;
-    TreeNode left;
-    TreeNode right;
-    
-    TreeNode(int val) {
-        this.val = val;
-        this.left = null;
-        this.right = null;
+// Max Heap Implementation
+class MaxHeap {
+    private PriorityQueue<Integer> pq;
+
+    public MaxHeap() {
+        // Collections.reverseOrder() creates a max heap in Java
+        pq = new PriorityQueue<>(Collections.reverseOrder());
+    }
+
+    public void push(int x) {
+        pq.offer(x);
+    }
+
+    public void pop() {
+        if (!pq.isEmpty()) {
+            pq.poll();
+        }
+    }
+
+    public int peek() {
+        if (pq.isEmpty()) {
+            return -1;
+        }
+        return pq.peek();
+    }
+
+    public int size() {
+        return pq.size();
+    }
+
+    public boolean isEmpty() {
+        return pq.isEmpty();
+    }
+}
+
+// Min Heap Implementation (Manual)
+class MinHeap {
+    private List<Integer> heap;
+
+    public MinHeap() {
+        heap = new ArrayList<>();
+    }
+
+    public void push(int x) {
+        // Insert x into the heap
+        heap.add(x);
+        int curr = heap.size() - 1;
+
+        // Heapify Up (Bubble Up)
+        while (curr > 0) {
+            int parent = (curr - 1) / 2;
+            if (heap.get(curr) < heap.get(parent)) {
+                // Swap
+                int temp = heap.get(curr);
+                heap.set(curr, heap.get(parent));
+                heap.set(parent, temp);
+                curr = parent;
+            } else {
+                break;
+            }
+        }
+    }
+
+    public void pop() {
+        if (heap.isEmpty())
+            return;
+
+        heap.set(0, heap.get(heap.size() - 1));
+        heap.remove(heap.size() - 1);
+
+        if (heap.isEmpty())
+            return;
+
+        int curr = 0;
+        int n = heap.size();
+        while (true) {
+            int smallest = curr;
+            int left = 2 * curr + 1;
+            int right = 2 * curr + 2;
+
+            if (left < n && heap.get(left) < heap.get(smallest))
+                smallest = left;
+            if (right < n && heap.get(right) < heap.get(smallest))
+                smallest = right;
+
+            if (smallest != curr) {
+                int temp = heap.get(curr);
+                heap.set(curr, heap.get(smallest));
+                heap.set(smallest, temp);
+                curr = smallest;
+            } else {
+                break;
+            }
+        }
+    }
+
+    public int peek() {
+        if (heap.isEmpty())
+            return -1;
+        return heap.get(0);
+    }
+
+    public int size() {
+        return heap.size();
+    }
+
+    public boolean isEmpty() {
+        return heap.isEmpty();
+    }
+
+    public void printHeap() {
+        System.out.println("Heap: " + heap);
     }
 }
 
 public class Main {
-    
-    // 1. Top View of Binary Tree
-    static class Solution1 {
-        List<Integer> topView(TreeNode root) {
-            List<Integer> result = new ArrayList<>();
-            if (root == null)
-                return result;
-            
-            Map<Integer, Integer> topNodeMap = new HashMap<>();
-            Queue<Pair<TreeNode, Integer>> q = new LinkedList<>();
-            q.add(new Pair<>(root, 0));
-            
-            while (!q.isEmpty()) {
-                Pair<TreeNode, Integer> temp = q.poll();
-                TreeNode curr = temp.getKey();
-                int hd = temp.getValue();
-                
-                if (!topNodeMap.containsKey(hd))
-                    topNodeMap.put(hd, curr.val);
-                
-                if (curr.left != null)
-                    q.add(new Pair<>(curr.left, hd - 1));
-                if (curr.right != null)
-                    q.add(new Pair<>(curr.right, hd + 1));
-            }
-            
-            List<Integer> keys = new ArrayList<>(topNodeMap.keySet());
-            Collections.sort(keys);
-            for (int hd : keys)
-                result.add(topNodeMap.get(hd));
-            
-            return result;
-        }
-    }
-    
-    // 2. Bottom View of Binary Tree
-    static class Solution2 {
-        List<Integer> bottomView(TreeNode root) {
-            List<Integer> res = new ArrayList<>();
-            if (root == null)
-                return res;
-            
-            Map<Integer, Integer> bottomNodes = new HashMap<>();
-            Queue<Pair<TreeNode, Integer>> q = new LinkedList<>();
-            q.add(new Pair<>(root, 0));
-            
-            while (!q.isEmpty()) {
-                Pair<TreeNode, Integer> curr = q.poll();
-                TreeNode temp = curr.getKey();
-                int hd = curr.getValue();
-                
-                bottomNodes.put(hd, temp.val);
-                
-                if (temp.left != null)
-                    q.add(new Pair<>(temp.left, hd - 1));
-                if (temp.right != null)
-                    q.add(new Pair<>(temp.right, hd + 1));
-            }
-            
-            List<Integer> keys = new ArrayList<>(bottomNodes.keySet());
-            Collections.sort(keys);
-            for (int hd : keys)
-                res.add(bottomNodes.get(hd));
-            
-            return res;
-        }
-    }
-    
-    // 3. Left View of Binary Tree
-    static class Solution3 {
-        void helper(TreeNode root, int level, List<Integer> res) {
-            if (root == null)
-                return;
-            
-            if (res.size() == level) {
-                res.add(root.val);
-            }
-            
-            helper(root.left, level + 1, res);
-            helper(root.right, level + 1, res);
-        }
-        
-        List<Integer> leftView(TreeNode root) {
-            List<Integer> res = new ArrayList<>();
-            helper(root, 0, res);
-            return res;
-        }
-    }
-    
-    // 4. Right View of Binary Tree
-    static class Solution4 {
-        List<Integer> rightView(TreeNode root) {
-            List<Integer> result = new ArrayList<>();
-            if (root == null)
-                return result;
-            
-            Queue<TreeNode> q = new LinkedList<>();
-            q.add(root);
-            
-            while (!q.isEmpty()) {
-                int levelSize = q.size();
-                for (int i = 0; i < levelSize; i++) {
-                    TreeNode currentNode = q.poll();
-                    if (i == levelSize - 1) {
-                        result.add(currentNode.val);
-                    }
-                    if (currentNode.left != null)
-                        q.add(currentNode.left);
-                    if (currentNode.right != null)
-                        q.add(currentNode.right);
-                }
-            }
-            
-            return result;
-        }
-    }
-    
-    // 5. Insert into a Binary Search Tree
-    static class Solution5 {
-        TreeNode insertIntoBST(TreeNode root, int val) {
-            if (root == null)
-                return new TreeNode(val);
-            
-            if (val > root.val)
-                root.right = insertIntoBST(root.right, val);
-            else
-                root.left = insertIntoBST(root.left, val);
-            
-            return root;
-        }
-    }
-    
-    // 6. Search in a Binary Search Tree
-    static class Solution6 {
-        TreeNode searchBST(TreeNode root, int val) {
-            if (root == null)
-                return null;
-            
-            if (root.val == val)
-                return root;
-            else if (val < root.val)
-                return searchBST(root.left, val);
-            else
-                return searchBST(root.right, val);
-        }
-    }
-    
-    // 7. Delete Node in a Binary Search Tree
-    static class Solution7 {
-        TreeNode minValueNode(TreeNode node) {
-            TreeNode curr = node;
-            while (curr != null && curr.left != null) {
-                curr = curr.left;
-            }
-            return curr;
-        }
-        
-        TreeNode deleteNode(TreeNode root, int key) {
-            if (root == null)
-                return null;
-            
-            if (key < root.val)
-                root.left = deleteNode(root.left, key);
-            else if (key > root.val)
-                root.right = deleteNode(root.right, key);
-            else {
-                if (root.left == null) {
-                    return root.right;
-                } else if (root.right == null) {
-                    return root.left;
-                }
-                
-                TreeNode temp = minValueNode(root.right);
-                root.val = temp.val;
-                root.right = deleteNode(root.right, temp.val);
-            }
-            
-            return root;
-        }
-    }
-    
-    // 8. Convert Sorted Array to a BST
-    static class Solution8 {
-        TreeNode sortedArrayToBST(int[] nums) {
-            return buildBST(nums, 0, nums.length - 1);
-        }
-        
-        private TreeNode buildBST(int[] nums, int left, int right) {
-            if (left > right)
-                return null;
-            
-            int mid = left + (right - left) / 2;
-            TreeNode root = new TreeNode(nums[mid]);
-            root.left = buildBST(nums, left, mid - 1);
-            root.right = buildBST(nums, mid + 1, right);
-            
-            return root;
-        }
-    }
-    
-    // Helper class to replace std::pair
-    static class Pair<K, V> {
-        private K key;
-        private V value;
-        
-        Pair(K key, V value) {
-            this.key = key;
-            this.value = value;
-        }
-        
-        K getKey() {
-            return key;
-        }
-        
-        V getValue() {
-            return value;
-        }
-    }
-    
     public static void main(String[] args) {
-        // Create a sample BST
-        TreeNode root = new TreeNode(4);
-        root.left = new TreeNode(2);
-        root.right = new TreeNode(6);
-        root.left.left = new TreeNode(1);
-        root.left.right = new TreeNode(3);
-        root.right.left = new TreeNode(5);
-        root.right.right = new TreeNode(7);
-        
-        // Test Solution 1: Top View
-        System.out.println("1. Top View of Binary Tree:");
-        Solution1 sol1 = new Solution1();
-        System.out.println(sol1.topView(root));
-        
-        // Test Solution 2: Bottom View
-        System.out.println("\n2. Bottom View of Binary Tree:");
-        Solution2 sol2 = new Solution2();
-        System.out.println(sol2.bottomView(root));
-        
-        // Test Solution 3: Left View
-        System.out.println("\n3. Left View of Binary Tree:");
-        Solution3 sol3 = new Solution3();
-        System.out.println(sol3.leftView(root));
-        
-        // Test Solution 4: Right View
-        System.out.println("\n4. Right View of Binary Tree:");
-        Solution4 sol4 = new Solution4();
-        System.out.println(sol4.rightView(root));
-        
-        // Test Solution 5: Insert into BST
-        System.out.println("\n5. Insert into BST:");
-        Solution5 sol5 = new Solution5();
-        TreeNode bst = new TreeNode(4);
-        bst = sol5.insertIntoBST(bst, 2);
-        bst = sol5.insertIntoBST(bst, 6);
-        bst = sol5.insertIntoBST(bst, 1);
-        bst = sol5.insertIntoBST(bst, 3);
-        System.out.println("BST created with insertions");
-        
-        // Test Solution 6: Search in BST
-        System.out.println("\n6. Search in BST:");
-        Solution6 sol6 = new Solution6();
-        TreeNode found = sol6.searchBST(root, 3);
-        System.out.println("Search for 3: " + (found != null ? "Found" : "Not Found"));
-        found = sol6.searchBST(root, 10);
-        System.out.println("Search for 10: " + (found != null ? "Found" : "Not Found"));
-        
-        // Test Solution 7: Delete Node
-        System.out.println("\n7. Delete Node in BST:");
-        Solution7 sol7 = new Solution7();
-        root = sol7.deleteNode(root, 2);
-        System.out.println("Deleted node 2");
-        
-        // Test Solution 8: Convert Sorted Array to BST
-        System.out.println("\n8. Convert Sorted Array to BST:");
-        Solution8 sol8 = new Solution8();
-        int[] sortedArray = {-10, -3, 0, 5, 9};
-        TreeNode bstFromArray = sol8.sortedArrayToBST(sortedArray);
-        System.out.println("BST created from sorted array");
+        System.out.println("===== Max Heap Implementation =====");
+        MaxHeap maxHeap = new MaxHeap();
+
+        System.out.println("Inserting: 10, 20, 15, 30, 5");
+        maxHeap.push(10);
+        maxHeap.push(20);
+        maxHeap.push(15);
+        maxHeap.push(30);
+        maxHeap.push(5);
+
+        System.out.println("Size: " + maxHeap.size());
+        System.out.println("Peek (max element): " + maxHeap.peek());
+
+        System.out.println("\nRemoving elements in order:");
+        while (!maxHeap.isEmpty()) {
+            System.out.println("Top: " + maxHeap.peek());
+            maxHeap.pop();
+        }
+
+        System.out.println("Size after all removals: " + maxHeap.size());
+        System.out.println("Peek on empty heap: " + maxHeap.peek());
+
+        System.out.println("\n\n===== Min Heap Implementation =====");
+        MinHeap minHeap = new MinHeap();
+
+        System.out.println("Inserting: 10, 20, 15, 30, 5");
+        minHeap.push(10);
+        minHeap.push(20);
+        minHeap.push(15);
+        minHeap.push(30);
+        minHeap.push(5);
+
+        minHeap.printHeap();
+        System.out.println("Size: " + minHeap.size());
+        System.out.println("Peek (min element): " + minHeap.peek());
+
+        System.out.println("\nRemoving elements in order:");
+        while (!minHeap.isEmpty()) {
+            System.out.println("Top: " + minHeap.peek());
+            minHeap.pop();
+            if (!minHeap.isEmpty())
+                minHeap.printHeap();
+        }
+
+        System.out.println("Size after all removals: " + minHeap.size());
+        System.out.println("Peek on empty heap: " + minHeap.peek());
+
+        System.out.println("\n\n===== Additional Min Heap Test =====");
+        MinHeap minHeap2 = new MinHeap();
+        int[] arr = {50, 30, 20, 15, 10, 8, 16};
+
+        System.out.println("Inserting: " + Arrays.toString(arr));
+        for (int num : arr) {
+            minHeap2.push(num);
+        }
+
+        minHeap2.printHeap();
+        System.out.println("Min element: " + minHeap2.peek());
     }
 }
